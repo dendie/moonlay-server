@@ -4,6 +4,7 @@ const cors = require("cors");
 const auth = require('./middleware/auth');
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const router = express.Router();
@@ -33,7 +34,8 @@ app.post("/login", (req, res) => {
                 if (result) {
                     bcrypt.compare(password, result[0].password, function(err, res2) {
                         if (res2 == true) {
-                            res.send({ ...result, token: 'auth', status: 200 });
+                            let token = jwt.sign({"id": result[0].id }, 'hsC0hyDhU80V16JKyKVN9LH7M2uXye8dYKWaita2XBwkdbE7FIV1u6uAmDMJPTwR');
+                            res.send({ ...result, token: token, status: 200 });
                         } else {
                             res.send({ status: 400, message: "Wrong Password !"});
                         }
@@ -59,7 +61,7 @@ app.post("/register", (req, res) => {
     );
 });
 
-app.post("/createCompany", (req, res) => {
+app.post("/createCompany", auth, (req, res) => {
     const name = req.body.name;
     const date = req.body.date;
     const type = req.body.type;
